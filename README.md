@@ -1,2 +1,4 @@
 # customer-registration
-Typescript || Fastify || Mongodb || Prisma
+
+Backend: Typescript || Fastify || Mongodb || Prisma
+Frontend: Typescript || Tailwind || React || Vite
