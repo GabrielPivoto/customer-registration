@@ -1,6 +1,7 @@
 import {FiTrash} from 'react-icons/fi'
 import { api } from './services/api'
 import {useEffect, useState, useRef, FormEvent} from 'react'
+import mqtt from 'mqtt'
 
 interface CustomerProps{
   id: string,
@@ -37,6 +38,44 @@ export default function App(){
     emailRef.current.value = ""
   }
 
+  async function handleMqttSubmit(event:FormEvent){
+    event.preventDefault()
+
+    const client = mqtt.connect('mqtt://localhost:1883')
+
+    // client.on('connect', () => {
+    //   console.log('Connected to MQTT broker')
+    // })
+
+    // client.on('error', (err) => {
+    //   console.error('MQTT connection error:', err)
+    // })
+
+    // client.subscribe('customers');
+
+    if (!nameRef.current?.value || !emailRef.current?.value) return
+
+    const customerData = {
+      name: nameRef.current?.value,
+      email: emailRef.current?.value,
+    }
+
+    // Publish to MQTT broker
+    client.publish('customers', "teste", (err) => {
+      if (err) {
+        console.error('Failed to publish message:', err)
+      } else {
+        console.log('Message published successfully')
+      }
+    })
+
+    // Simulate the response from MQTT by adding the customer locally
+    const newCustomer = { id: Date.now().toString(), ...customerData, status: true, created_at: new Date().toISOString() }
+    setCustomers(allCustomers => [...allCustomers, newCustomer])
+    nameRef.current.value = ""
+    emailRef.current.value = ""
+  }
+
   async function handleDelete(id: string){
     try{
       await api.delete("/customer", {
@@ -55,7 +94,7 @@ export default function App(){
     <div className="w-full min-h-screen bg-gray-900 flex justify-center px-4">
       <main className="my-10 w-full md:max-w-2xl ">
         <h1 className="text-4xl font-medium text-white">Customers</h1>
-        <form className="flex flex-col my-6" onSubmit={handleSubmit}>
+        <form className="flex flex-col my-6" onSubmit={handleMqttSubmit}>
 
           <label className="font-medium text-white">Name:</label>
           <input 
